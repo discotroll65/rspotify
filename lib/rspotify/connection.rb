@@ -33,9 +33,23 @@ module RSpotify
       true
     end
 
+    def authenticate_many(client_creds_hash)
+      @client_token_store = []
+      client_ids = client_creds_hash[:client_ids]
+      client_secrets = client_creds_hash[:client_secrets]
+      
+      client_ids.each_with_index do |current_id, idx|
+        current_secret = client_secrets[idx]
+        authenticate(current_id, current_secret)
+        @client_token_store << @client_token
+      end
+
+    end
+
     VERBS.each do |verb|
       define_method verb do |path, *params|
-        params << { 'Authorization' => "Bearer #{client_token}" } if client_token
+        chosen_token = select_client_token
+        params << { 'Authorization' => "Bearer #{chosen_token}" } if chosen_token
         send_request(verb, path, *params)
       end
     end
@@ -53,6 +67,12 @@ module RSpotify
     end
 
     private
+
+    def select_client_token
+      return client_token unless @client_token_store.is_a?(Array) && @client_token_store[0]
+      rand_idx = rand(0..(@client_token_store.count - 1))
+      @client_token_store[rand_idx]
+    end
 
     def send_request(verb, path, *params)
       url = path.start_with?('http') ? path : API_URI + path
