@@ -83,8 +83,11 @@ module RSpotify
       begin
         headers = get_headers(params)
         headers['Accept-Language'] = ENV['ACCEPT_LANGUAGE'] if ENV['ACCEPT_LANGUAGE']
-        params << { proxy: nil }
-        response = RestClient.send(verb, url, *params)
+        response = RestClient::Request.execute(params.reduce(Hash.new, :merge).merge(
+          method: verb,
+          url: url,
+          proxy: nil
+        ))
       rescue RestClient::Unauthorized => e
         raise e if request_was_user_authenticated?(*params)
 
