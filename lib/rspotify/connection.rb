@@ -64,6 +64,8 @@ module RSpotify
         headers = get_headers(params)
         headers['Accept-Language'] = ENV['ACCEPT_LANGUAGE'] if ENV['ACCEPT_LANGUAGE']
         response = RestClient.send(verb, url, *params)
+      rescue RestClient::InternalServerError
+        puts "Internal Server Error"
       rescue RestClient::Unauthorized => e
         raise e if request_was_user_authenticated?(*params)
 
