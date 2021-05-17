@@ -88,6 +88,9 @@ module RSpotify
           url: url,
           proxy: nil
         ))
+
+      rescue RestClient::InternalServerError
+        puts "Internal Server Error from rspotify gem"
       rescue RestClient::Unauthorized => e
         raise e if request_was_user_authenticated?(*params)
 
